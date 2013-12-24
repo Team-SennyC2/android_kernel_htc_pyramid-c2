@@ -59,6 +59,7 @@ struct audio_mvs_info_type {
 	struct list_head out_queue;
 	struct list_head free_out_queue;
 
+	wait_queue_head_t in_wait;
 	wait_queue_head_t out_wait;
 
 	struct mutex lock;
@@ -115,7 +116,6 @@ static void audio_mvs_process_ul_pkt(uint8_t *voc_pkt,
 			 * Bits 4-7: Frame type
 			 */
 			buf_node->frame.frame_type = ((*voc_pkt) & 0xF0) >> 4;
-			buf_node->frame.frame_rate = ((*voc_pkt) & 0x0F);
 			voc_pkt = voc_pkt + DSP_FRAME_HDR_LEN;
 
 			buf_node->frame.len = pkt_len - DSP_FRAME_HDR_LEN;
@@ -480,6 +480,7 @@ static void audio_mvs_process_dl_pkt(uint8_t *voc_pkt,
 	}
 
 	spin_unlock_irqrestore(&audio->dsp_lock, dsp_flags);
+	wake_up(&audio->in_wait);
 }
 
 static uint32_t audio_mvs_get_media_type(uint32_t mvs_mode, uint32_t rate_type)
@@ -518,8 +519,12 @@ static uint32_t audio_mvs_get_media_type(uint32_t mvs_mode, uint32_t rate_type)
 			media_type = VSS_MEDIA_ID_G711_ALAW;
 		break;
 
+	case MVS_MODE_PCM_WB:
+		media_type = VSS_MEDIA_ID_PCM_WB;
+		break;
+
 	default:
-		media_type = VSS_MEDIA_ID_PCM_NB;
+		media_type = VSS_MEDIA_ID_PCM_WB;
 	}
 
 	pr_debug("%s: media_type is 0x%x\n", __func__, media_type);
@@ -542,6 +547,7 @@ static uint32_t audio_mvs_get_network_type(uint32_t mvs_mode)
 		break;
 
 	case MVS_MODE_AMR_WB:
+	case MVS_MODE_PCM_WB:
 		network_type = VSS_NETWORK_ID_VOIP_WB;
 		break;
 
@@ -791,41 +797,53 @@ static ssize_t audio_mvs_write(struct file *file,
 
 	pr_debug("%s:\n", __func__);
 
-	mutex_lock(&audio->in_lock);
+	rc = wait_event_interruptible_timeout(audio->in_wait,
+		(!list_empty(&audio->free_in_queue) ||
+		audio->state == AUDIO_MVS_STOPPED), 1 * HZ);
+	if (rc > 0) {
+		mutex_lock(&audio->in_lock);
 
-	if (audio->state == AUDIO_MVS_STARTED) {
-		if (count <= sizeof(struct msm_audio_mvs_frame)) {
-			if (!list_empty(&audio->free_in_queue)) {
-				buf_node =
+		if (audio->state == AUDIO_MVS_STARTED) {
+			if (count <= sizeof(struct msm_audio_mvs_frame)) {
+				if (!list_empty(&audio->free_in_queue)) {
+					buf_node =
 					list_first_entry(&audio->free_in_queue,
-						 struct audio_mvs_buf_node,
-						 list);
-				list_del(&buf_node->list);
+					 struct audio_mvs_buf_node, list);
+					list_del(&buf_node->list);
+					rc = copy_from_user(&buf_node->frame,
+							    buf,
+							    count);
 
-				rc = copy_from_user(&buf_node->frame,
-						    buf,
-						    count);
-
-				list_add_tail(&buf_node->list,
-					      &audio->in_queue);
+					list_add_tail(&buf_node->list,
+						      &audio->in_queue);
+				} else {
+					pr_aud_err("%s: No free DL buffs\n",
+						__func__);
+				}
 			} else {
-				pr_aud_err("%s: No free DL buffs\n", __func__);
+				pr_aud_err("%s: Write count %d < sizeof(frame) %d",
+				       __func__, count,
+				       sizeof(struct msm_audio_mvs_frame));
+
+				rc = -ENOMEM;
 			}
 		} else {
-			pr_aud_err("%s: Write count %d < sizeof(frame) %d",
-			       __func__, count,
-			       sizeof(struct msm_audio_mvs_frame));
+			pr_aud_err("%s: Write performed in invalid state %d\n",
+			       __func__, audio->state);
 
-			rc = -ENOMEM;
+			rc = -EPERM;
 		}
+
+		mutex_unlock(&audio->in_lock);
+	} else if (rc == 0) {
+		pr_aud_err("%s: No free DL buffs\n", __func__);
+
+		rc = -ETIMEDOUT;
 	} else {
-		pr_aud_err("%s: Write performed in invalid state %d\n",
-		       __func__, audio->state);
+		pr_aud_err("%s: write was interrupted\n", __func__);
 
-		rc = -EPERM;
+		rc = -ERESTARTSYS;
 	}
-
-	mutex_unlock(&audio->in_lock);
 
 	return rc;
 }
@@ -960,6 +978,7 @@ static int __init audio_mvs_init(void)
 
 	memset(&audio_mvs_info, 0, sizeof(audio_mvs_info));
 
+	init_waitqueue_head(&audio_mvs_info.in_wait);
 	init_waitqueue_head(&audio_mvs_info.out_wait);
 
 	mutex_init(&audio_mvs_info.lock);
