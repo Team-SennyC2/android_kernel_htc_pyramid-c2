@@ -206,6 +206,13 @@ config S5K3H1GX
   default n
   ---help---
     Samsung 8M 3H1 MIPI AF Sensor
+    
+    config S5K3H1GX_ACT
+	bool "Sensor s5k3h2yx actuator"
+	depends on MSM_CAMERA
+	default n
+	---help---
+	  Autofocus of s5k3h2yx actuator
 
 config MSM_CAMERA_FLASH_SC628A
 	bool "Qualcomm MSM camera sc628a flash support"
