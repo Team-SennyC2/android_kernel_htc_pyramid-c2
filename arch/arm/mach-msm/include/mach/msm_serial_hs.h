@@ -29,13 +29,13 @@ struct msm_serial_hs_platform_data {
 	void (*exit_lpm_cb)(struct uart_port *);
 #endif
 };
-#ifdef CONFIG_MACH_RUBY
+
 /* API for TI_ST */
 extern void ti_msm_hs_request_clock_off(struct uart_port *uport);
 extern void ti_msm_hs_request_clock_on(struct uart_port *uport);
 extern void ti_dc_msm_hs_request_clock_off(struct uart_port *uport);
 extern void ti_dc_msm_hs_request_clock_on(struct uart_port *uport);
-#endif
+
 
 unsigned int msm_hs_tx_empty(struct uart_port *uport);
 void msm_hs_request_clock_off(struct uart_port *uport);

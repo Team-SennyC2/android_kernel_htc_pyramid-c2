@@ -72,10 +72,10 @@ typedef struct {
 	void (*mhl_usb_switch)(int);
 	void (*mhl_1v2_power)(bool enable);
 	int (*power)(int);
-#ifdef CONFIG_FB_MSM8960
+
 	int (*enable_5v)(int on);
 	int (*mhl_power_vote)(bool enable);
-#ifdef CONFIG_FB_MSM_HDMI_MHL_SUPERDEMO
+
 	int abs_x_min;
 	int abs_x_max;
 	int abs_y_min;
@@ -84,10 +84,9 @@ typedef struct {
 	int abs_pressure_max;
 	int abs_width_min;
 	int abs_width_max;
-#endif
-#else /* CONFIG_FB_MSM8960 */
+
 	mhl_board_params board_params;
-#endif /* CONFIG_FB_MSM8960 */
+
 } T_MHL_PLATFORM_DATA;
 
 //********************************************************************

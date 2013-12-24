@@ -490,10 +490,11 @@ struct lcdc_platform_data {
 	int (*lcdc_gpio_config)(int on);
 	int (*lcdc_power_save)(int);
 	unsigned int (*lcdc_get_clk)(void);
-#ifdef CONFIG_MSM_BUS_SCALING
+
 	struct msm_bus_scale_pdata *bus_scale_table;
-#endif
+
 };
+
 
 struct tvenc_platform_data {
 	int poll;
@@ -523,7 +524,7 @@ enum mipi_dsi_3d_ctrl {
 	FPGA_SPI_INTF,
 };
 
-#if defined(CONFIG_FB_MSM8960) || (!defined(CONFIG_ARCH_MSM8X60) && !defined(CONFIG_ARCH_MSM7X27A))
+
 /* DSI PHY configuration */
 struct mipi_dsi_phy_ctrl {
 	uint32_t regulator[5];
@@ -532,7 +533,7 @@ struct mipi_dsi_phy_ctrl {
 	uint32_t strength[4];
 	uint32_t pll[21];
 };
-#endif
+
 
 struct mipi_dsi_panel_platform_data {
 	int fpga_ctrl_mode;
@@ -541,9 +542,9 @@ struct mipi_dsi_panel_platform_data {
 	struct mipi_dsi_phy_ctrl *phy_ctrl_settings;
 };
 
-#ifdef CONFIG_ARCH_MSM7X27A
+
 #define PANEL_NAME_MAX_LEN 50
-#endif
+
 struct msm_fb_platform_data {
 	int (*detect_client)(const char *name);
 	int mddi_prescan;
@@ -558,7 +559,7 @@ struct msm_fb_platform_data {
 #endif
 };
 
-#ifdef CONFIG_FB_MSM8960
+
 #define HDMI_VFRMT_640x480p60_4_3 0
 #define HDMI_VFRMT_720x480p60_16_9 2
 #define HDMI_VFRMT_1280x720p60_16_9 3
@@ -572,7 +573,7 @@ typedef struct
 	uint8_t reg_a3;
 	uint8_t reg_a6;
 }mhl_driving_params;
-#endif /* CONFIG_FB_MSM8960 */
+
 
 struct msm_hdmi_platform_data {
 	int irq;
@@ -583,10 +584,10 @@ struct msm_hdmi_platform_data {
 	int (*cec_power)(int on);
 	int (*init_irq)(void);
 	bool (*check_hdcp_hw_support)(void);
-#ifdef CONFIG_FB_MSM8960
+
 	mhl_driving_params *driving_params;
 	int dirving_params_count;
-#endif /* CONFIG_FB_MSM8960 */
+
 };
 
 struct msm_i2c_platform_data {
@@ -619,6 +620,7 @@ struct msm_vidc_platform_data {
 #ifdef CONFIG_MSM_BUS_SCALING
 	struct msm_bus_scale_pdata *vidc_bus_client_pdata;
 #endif
+	int disable_turbo;
 };
 
 #if defined(CONFIG_USB_PEHCI_HCD) || defined(CONFIG_USB_PEHCI_HCD_MODULE)
