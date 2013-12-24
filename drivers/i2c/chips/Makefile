@@ -13,7 +13,6 @@
 obj-$(CONFIG_SENSORS_AKM8975)   += akm8975.o
 obj-$(CONFIG_SENSORS_AKM8975_PANA_GYRO)   += akm8975_pana_gyro.o
 obj-$(CONFIG_SENSORS_PANASONIC_GYRO)	+= ewtzmu2.o
-obj-$(CONFIG_SENSORS_BMA150)    += bma150.o
 obj-$(CONFIG_SENSORS_BMA250)	+= bma250.o
 obj-$(CONFIG_SENSORS_ONLY_BMA250)      += bma250_without_Ecompass.o
 obj-$(CONFIG_SENSORS_I2C_AK_BMA250)	+= akm_bma250.o
@@ -25,7 +24,6 @@ obj-$(CONFIG_VP_A1028)		+= a1028.o
 obj-$(CONFIG_AMP_TPA2051D3)		+= tpa2051d3.o
 obj-$(CONFIG_INPUT_ISL29028)	+= isl29028.o
 obj-$(CONFIG_INPUT_ISL29029)	+= isl29029.o
-obj-$(CONFIG_SMB349)            += smb349.o
 obj-$(CONFIG_TPS65200)          += tps65200.o
 obj-$(CONFIG_CODEC_AIC3254)      += aic3254.o
 obj-$(CONFIG_CODEC_AIC3008)      += aic3008.o
