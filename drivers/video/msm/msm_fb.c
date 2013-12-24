@@ -331,7 +331,7 @@ static struct led_classdev backlight_led = {
 };
 #endif
 
-#define PANEL_NAME_MAX_LEN 30
+
 static struct msm_fb_platform_data *msm_fb_pdata;
 static char prim_panel_name[PANEL_NAME_MAX_LEN];
 static char ext_panel_name[PANEL_NAME_MAX_LEN];

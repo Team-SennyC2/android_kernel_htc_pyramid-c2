@@ -177,10 +177,7 @@ struct msm_fb_panel_data {
 	void (*set_vsync_notifier) (msm_fb_vsync_handler_type, void *arg);
 	void (*set_backlight) (struct msm_fb_data_type *);
 	void (*display_on) (struct msm_fb_data_type *);
-#ifdef CONFIG_FB_MSM_CABC
-	void (*enable_cabc) (int, bool, struct msm_fb_data_type *);
-#endif
-	/* function entry chain */
+	void (*display_off) (struct msm_fb_data_type *);
 	int (*on) (struct platform_device *pdev);
 	int (*off) (struct platform_device *pdev);
 	struct platform_device *next;
